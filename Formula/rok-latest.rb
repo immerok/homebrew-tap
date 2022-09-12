@@ -5,7 +5,7 @@ require "io/console"
 require "base64"
 
 class RokLatest < Formula
-  desc "CLI for Immerok Cloud"
+  desc "rok is the official CLI for Immerok Cloud (head version)"
   homepage "https://github.com/immerok"
 
   option "with-dev", "Latest version for dev environment"

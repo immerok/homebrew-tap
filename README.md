@@ -8,9 +8,17 @@ brew tap immerok/tap
 
 ## Formulae
 
+### `rok`
+
+This formula installs the latest released version of the Immerok Cloud CLI.
+
+```shell
+brew install rok
+```
+
 ### `rok-latest`
 
-The latest available version of the Immerok Cloud CLI. This is a head-only formula.
+This is a head-only formula which installs the latest unreleased version of the Immerok Cloud CLI.
 
 ```
 brew install --HEAD rok-latest
