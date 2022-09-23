@@ -1,0 +1,48 @@
+name: Update rok CLI
+description: Updates the formula for the Immerok Cloud CLI.
+inputs:
+  gitTag:
+    description: git tag to release ("rok/v0.0.1" or "rok/v0.0.1-test").
+    required: true
+    type: string
+  dry:
+    description: Dry-run (do not push).
+    required: true
+    type: boolean
+    default: false
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Update version
+      working-directory: configs
+      run: |
+        version="$(echo "${{ inputs.gitTag }}" | cut -c 6-)"
+        yq -i ".version = \"${version}\"" "rok.yaml"
+
+    - name: Update checksums
+      working-directory: configs
+      run: |
+        for os in darwin linux; do
+          for arch in amd64 arm64; do
+            checksum="$(curl -sL "https://releases.immerok.cloud/${{ inputs.gitTag }}/rok-${os}-${arch}.tar.gz" | shasum -a 256 | cut -d ' ' -f 1)"
+            yq -i ".sha256[\"${os}\"][\"${arch}\"] = \"${checksum}\"" "rok.yaml"
+          done
+        done
+
+    - name: Commit
+      working-directory: configs
+      run: |
+        git config --global user.email "<noreply@github.com>"
+        git config --global user.name "GitHub"
+
+        git --no-pager diff
+        git commit -am "release ${{ inputs.gitTag }}" --author "Immerok <Immerok>"
+
+    - name: Push
+      if: ${{ !inputs.dry }}
+      working-directory: configs
+      run: |
+        git push

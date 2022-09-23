@@ -1,49 +1,12 @@
-name: Update rok formula
+name: Update rok CLI
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: Version to release ("0.0.1" or "0.0.1-test").
-        required: true
-        type: string
-      dry:
-        description: Dry-run (do not push).
-        required: true
-        type: boolean
-        default: false
+  repository_dispatch:
 jobs:
-  deploy:
+  update:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Update version
-        working-directory: configs
-        run: |
-          yq -i ".version = \"${{ inputs.version }}\"" "rok.yaml"
-
-      - name: Update checksums
-        working-directory: configs
-        run: |
-          for os in darwin linux; do
-            for arch in amd64 arm64; do
-              checksum="$(curl -sL "https://releases.immerok.cloud/rok/v${{ inputs.version }}/rok-${os}-${arch}.tar.gz" | shasum -a 256 | cut -d ' ' -f 1)"
-              yq -i ".sha256[\"${os}\"][\"${arch}\"] = \"${checksum}\"" "rok.yaml"
-            done
-          done
-
-      - name: Commit
-        working-directory: configs
-        run: |
-          git config --global user.email "<noreply@github.com>"
-          git config --global user.name "GitHub"
-
-          git --no-pager diff
-          git commit -am "rok ${{ inputs.version }}" --author "Immerok <Immerok>"
-
-      - name: Push
-        if: ${{ !inputs.dry }}
-        working-directory: configs
-        run: |
-          git push
+      - name: Update rok CLI
+        uses: ./.github/workflows/composite/update_rok
+        with:
+          gitTag: ${{ github.event.client_payload.gitTag }}
+          dry: false
