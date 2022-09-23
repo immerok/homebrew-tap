@@ -1,6 +1,7 @@
 name: Update rok CLI
 on:
   repository_dispatch:
+    types: [release]
 jobs:
   update:
     runs-on: ubuntu-latest
