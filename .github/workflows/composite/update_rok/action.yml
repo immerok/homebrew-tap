@@ -4,12 +4,6 @@ inputs:
   gitTag:
     description: git tag to release ("rok/v0.0.1" or "rok/v0.0.1-test").
     required: true
-    type: string
-  dry:
-    description: Dry-run (do not push).
-    required: true
-    type: boolean
-    default: false
 runs:
   using: composite
   steps:
@@ -18,12 +12,14 @@ runs:
 
     - name: Update version
       working-directory: configs
+      shell: bash
       run: |
         version="$(echo "${{ inputs.gitTag }}" | cut -c 6-)"
         yq -i ".version = \"${version}\"" "rok.yaml"
 
     - name: Update checksums
       working-directory: configs
+      shell: bash
       run: |
         for os in darwin linux; do
           for arch in amd64 arm64; do
@@ -34,6 +30,7 @@ runs:
 
     - name: Commit
       working-directory: configs
+      shell: bash
       run: |
         git config --global user.email "<noreply@github.com>"
         git config --global user.name "GitHub"
@@ -42,7 +39,7 @@ runs:
         git commit -am "release ${{ inputs.gitTag }}" --author "Immerok <Immerok>"
 
     - name: Push
-      if: ${{ !inputs.dry }}
+      shell: bash
       working-directory: configs
       run: |
         git push
