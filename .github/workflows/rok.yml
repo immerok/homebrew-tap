@@ -1,0 +1,50 @@
+name: Update rok formula
+on:
+  workflow_dispatch:
+    inputs:
+      # git describe --match "rok/*" --abbrev=0 --tags
+      version:
+        description: Version to release ("0.0.1").
+        required: true
+        type: string
+      dry:
+        description: Dry-run (do not push).
+        required: true
+        type: boolean
+        default: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Update version
+        working-directory: configs
+        run: |
+          yq -i ".version = \"${{ inputs.version }}\"" "rok.yaml"
+
+      - name: Update checksums
+        working-directory: configs
+        run: |
+          for os in darwin linux; do
+            for arch in amd64 arm64; do
+              checksum="$(curl -sL "https://releases.immerok.cloud/rok/v${{ inputs.version }}/rok-${os}-${arch}.tar.gz" | shasum -a 256 | cut -d ' ' -f 1)"
+              yq -i ".sha256[\"${os}\"][\"${arch}\"] = \"${checksum}\"" "rok.yaml"
+            done
+          done
+
+      - name: Commit
+        working-directory: configs
+        run: |
+          git config --global user.email "<noreply@github.com>"
+          git config --global user.name "GitHub"
+
+          git --no-pager diff
+          git commit -am "rok ${{ inputs.version }}" --author "Immerok <Immerok>"
+
+      - name: Push
+        if: ${{ !inputs.dry }}
+        working-directory: configs
+        run: |
+          git push
