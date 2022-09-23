@@ -2,9 +2,8 @@ name: Update rok formula
 on:
   workflow_dispatch:
     inputs:
-      # git describe --match "rok/*" --abbrev=0 --tags
       version:
-        description: Version to release ("0.0.1").
+        description: Version to release ("0.0.1" or "0.0.1-test").
         required: true
         type: string
       dry:
