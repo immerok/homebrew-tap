@@ -8,6 +8,7 @@ class Rok < Formula
   desc "rok is the official CLI for Immerok Cloud"
   homepage "https://github.com/immerok"
   version config_provider.version
+  license :cannot_represent
 
   on_macos do
     on_arm do
